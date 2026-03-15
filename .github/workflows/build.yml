@@ -1,0 +1,31 @@
+name: BharatOS-Builder
+on: [push]
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Build Environment
+        run: |
+          sudo apt update
+          sudo apt install -y live-build xorriso squashfs-tools
+
+      - name: Configure BharatOS
+        run: |
+          mkdir build && cd build
+          lb config --architecture amd64 --distribution bookworm --binary-images iso-hybrid --archive-areas "main contrib non-free non-free-firmware"
+          echo "xfce4 xfce4-goodies lightdm fonts-indic fonts-deva fonts-beng wine vlc firefox-esr" > config/package-lists/bharat.list.chroot
+
+      - name: Build the ISO
+        run: |
+          cd build
+          sudo lb build
+
+      - name: Upload BharatOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: BharatOS-Installation-File
+          path: build/*.iso
