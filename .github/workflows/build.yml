@@ -10,10 +10,12 @@ jobs:
 
       - name: Setup Build Environment
         run: |
-          sudo apt update
-          sudo apt install -y live-build xorriso squashfs-tools debian-archive-keyring
-          # This line clears out any old Ubuntu links that cause the Error 100
-          sudo rm -f /etc/apt/sources.list.d/* - name: Configure BharatOS
+          # Step 1: Force remove the broken Ubuntu security lists
+          sudo rm -rf /etc/apt/sources.list.d/*
+          sudo apt-get update -o Dir::Etc::sourcelist="sources.list"
+          sudo apt-get install -y live-build xorriso squashfs-tools debian-archive-keyring
+
+      - name: Configure BharatOS
         run: |
           mkdir -p build && cd build
           lb config --architecture amd64 \
@@ -22,20 +24,18 @@ jobs:
             --mirror-binary "http://deb.debian.org/debian/" \
             --mirror-chroot-security "http://deb.debian.org/debian-security/" \
             --mirror-binary-security "http://deb.debian.org/debian-security/" \
-            --archive-areas "main contrib non-free non-free-firmware" \
-            --apt-indices false
+            --archive-areas "main contrib non-free non-free-firmware"
           mkdir -p config/package-lists
           echo "xfce4 xfce4-goodies lightdm fonts-indic fonts-deva fonts-beng wine vlc firefox-esr" > config/package-lists/bharat.list.chroot
 
       - name: Build the ISO
         run: |
           cd build
-          # We add '|| true' to let the build continue even if a small non-critical update fails
-          sudo lb build || sudo lb build 
+          sudo lb build
 
       - name: Upload BharatOS
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: BharatOS-ISO
           path: build/*.iso
-          
