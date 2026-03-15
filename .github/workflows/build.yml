@@ -1,39 +1,35 @@
-name: BharatOS-Builder
+ame: BharatOS-Builder
 on: [push]
 
 jobs:
-  build-iso:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Build Environment
+      - name: Install Tools
         run: |
-          sudo rm -rf /etc/apt/sources.list.d/*
-          sudo apt-get update -o Dir::Etc::sourcelist="sources.list"
+          sudo apt-get update
           sudo apt-get install -y live-build xorriso squashfs-tools debian-archive-keyring
 
-      - name: Configure BharatOS
+      - name: Config
         run: |
           mkdir -p build && cd build
           lb config --architecture amd64 \
             --distribution bookworm \
             --mirror-bootstrap "http://deb.debian.org/debian/" \
             --mirror-binary "http://deb.debian.org/debian/" \
-            --mirror-chroot-security "http://deb.debian.org/debian-security/" \
-            --mirror-binary-security "http://deb.debian.org/debian-security/" \
             --archive-areas "main contrib non-free non-free-firmware"
           mkdir -p config/package-lists
           echo "xfce4 xfce4-goodies lightdm fonts-indic fonts-deva fonts-beng wine vlc firefox-esr" > config/package-lists/bharat.list.chroot
 
-      - name: Build the ISO
+      - name: Build
         run: |
           cd build
           sudo lb build
 
-      - name: Upload BharatOS
-        if: always()
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: BharatOS-ISO
