@@ -11,12 +11,17 @@ jobs:
       - name: Setup Build Environment
         run: |
           sudo apt update
-          sudo apt install -y live-build xorriso squashfs-tools
+          sudo apt install -y live-build xorriso squashfs-tools debian-archive-keyring
 
       - name: Configure BharatOS
         run: |
-          mkdir build && cd build
-          lb config --architecture amd64 --distribution bookworm --binary-images iso-hybrid --archive-areas "main contrib non-free non-free-firmware"
+          mkdir -p build && cd build
+          lb config --architecture amd64 \
+            --distribution bookworm \
+            --mirror-bootstrap "http://deb.debian.org/debian/" \
+            --mirror-binary "http://deb.debian.org/debian/" \
+            --archive-areas "main contrib non-free non-free-firmware"
+          mkdir -p config/package-lists
           echo "xfce4 xfce4-goodies lightdm fonts-indic fonts-deva fonts-beng wine vlc firefox-esr" > config/package-lists/bharat.list.chroot
 
       - name: Build the ISO
@@ -27,5 +32,5 @@ jobs:
       - name: Upload BharatOS
         uses: actions/upload-artifact@v4
         with:
-          name: BharatOS-Installation-File
+          name: BharatOS-ISO
           path: build/*.iso
