@@ -4,23 +4,25 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm
+      options: --privileged # This is the "Magic Key" for permissions
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup
+      - name: Install Tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y live-build xorriso squashfs-tools
+          apt-get update
+          apt-get install -y live-build xorriso squashfs-tools
 
       - name: Build ISO
         run: |
           mkdir -p build && cd build
-          # Minimal config to ensure it passes the server check
           lb config --architecture amd64 --distribution bookworm --binary-images iso-hybrid
           mkdir -p config/package-lists
-          echo "xfce4 lightdm firefox-esr" > config/package-lists/bharat.list.chroot
-          sudo lb build
+          echo "xfce4 lightdm firefox-esr fonts-indic" > config/package-lists/bharat.list.chroot
+          lb build
 
       - name: Upload
         if: always()
