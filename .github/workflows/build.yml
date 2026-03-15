@@ -20,6 +20,8 @@ jobs:
             --distribution bookworm \
             --mirror-bootstrap "http://deb.debian.org/debian/" \
             --mirror-binary "http://deb.debian.org/debian/" \
+            --mirror-chroot-security "http://deb.debian.org/debian-security/" \
+            --mirror-binary-security "http://deb.debian.org/debian-security/" \
             --archive-areas "main contrib non-free non-free-firmware"
           mkdir -p config/package-lists
           echo "xfce4 xfce4-goodies lightdm fonts-indic fonts-deva fonts-beng wine vlc firefox-esr" > config/package-lists/bharat.list.chroot
